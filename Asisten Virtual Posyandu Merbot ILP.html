@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asisten Virtual Posyandu Merbot - ILP Kauman Ponorogo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col font-sans">
+
+    <!-- Toast Notification / Custom Modal Container -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] transition-transform duration-300 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        <span id="toast-message" class="text-sm font-medium">Berhasil disimpan!</span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-2xl backdrop-blur-sm border border-white/20">
+                    <i data-lucide="activity" class="w-7 h-7 text-emerald-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">Posyandu Merbot (ILP)</h1>
+                    <p class="text-xs text-emerald-200">Desa Kauman, Kec. Kauman, Kab. Ponorogo</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 bg-emerald-900/60 px-3 py-1.5 rounded-full border border-emerald-600/30 text-xs font-medium text-emerald-200">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Integrasi Layanan Primer (ILP) Active</span>
+            </div>
+        </div>
+        <!-- Navigation Tabs -->
+        <div class="bg-emerald-950/40 border-t border-emerald-700/30 overflow-x-auto scrollbar-none">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 sm:space-x-2 py-2">
+                <button onclick="switchTab('chat')" id="tab-btn-chat" class="tab-btn flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all bg-emerald-600 text-white shadow-sm flex-shrink-0">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                    <span>Asisten AI</span>
+                </button>
+                <button onclick="switchTab('balita')" id="tab-btn-balita" class="tab-btn flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-emerald-100 hover:bg-emerald-800/50 flex-shrink-0">
+                    <i data-lucide="baby" class="w-4 h-4"></i>
+                    <span>Balita & Bumil (S-K-D-N)</span>
+                </button>
+                <button onclick="switchTab('remaja')" id="tab-btn-remaja" class="tab-btn flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-emerald-100 hover:bg-emerald-800/50 flex-shrink-0">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Remaja (10-18 Th)</span>
+                </button>
+                <button onclick="switchTab('dewasa')" id="tab-btn-dewasa" class="tab-btn flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-emerald-100 hover:bg-emerald-800/50 flex-shrink-0">
+                    <i data-lucide="heart-pulse" class="w-4 h-4"></i>
+                    <span>Dewasa & PTM (19-59 Th)</span>
+                </button>
+                <button onclick="switchTab('lansia')" id="tab-btn-lansia" class="tab-btn flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-emerald-100 hover:bg-emerald-800/50 flex-shrink-0">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                    <span>Lansia (60+ Th)</span>
+                </button>
+                <button onclick="switchTab('pmt')" id="tab-btn-pmt" class="tab-btn flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all text-emerald-100 hover:bg-emerald-800/50 flex-shrink-0">
+                    <i data-lucide="utensils" class="w-4 h-4"></i>
+                    <span>PMT & SOP ILP</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+
+        <!-- TAB 1: CHAT ASISTEN AI -->
+        <section id="tab-chat" class="tab-content flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden h-[75vh]">
+            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold border border-emerald-200">
+                        <i data-lucide="bot" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-sm sm:text-base">Asisten Virtual Posyandu Merbot ILP</h2>
+                        <p class="text-xs text-slate-500">Tanya jawab SOP Puskesmas Kauman, e-PPGBM, Stunting, & Siklus Hidup</p>
+                    </div>
+                </div>
+                <button onclick="clearChat()" class="text-xs text-slate-500 hover:text-emerald-700 flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span>Reset Chat</span>
+                </button>
+            </div>
+
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold shadow-sm">
+                        <i data-lucide="bot" class="w-4 h-4"></i>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%] sm:max-w-[70%] text-sm text-slate-700 leading-relaxed">
+                        <p class="font-semibold text-emerald-800 mb-1">Halo Kader Posyandu Merbot! 👋</p>
+                        <p>Saya siap mendampingi pelayanan Integrasi Layanan Primer (ILP) Dusun Merbot mulai dari Balita, Ibu Hamil, Remaja, Usia Produktif, hingga Lansia. Ada yang ingin dikonsultasikan hari ini?</p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <button onclick="sendQuickPrompt('Bagaimana cara input e-PPGBM dan hitung S-K-D-N?')" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl hover:bg-emerald-100 transition-colors">📊 Panduan e-PPGBM</button>
+                            <button onclick="sendQuickPrompt('Apa saja SOP skrining PTM untuk Posyandu Dewasa?')" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl hover:bg-emerald-100 transition-colors">🩺 Skrining PTM Dewasa</button>
+                            <button onclick="sendQuickPrompt('Berikan resep PMT lokal penangkal stunting!')" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl hover:bg-emerald-100 transition-colors">🍲 Resep PMT Lokal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white border-t border-slate-200">
+                <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center space-x-3">
+                    <input type="text" id="chat-input" placeholder="Tanyakan seputar SOP Posyandu ILP, balita, hipertensi, lansia..." class="flex-1 bg-slate-100 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                    <button type="submit" id="chat-submit-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl flex items-center justify-center shadow-md transition-colors">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+                <div class="flex justify-between items-center mt-2 px-1">
+                    <span class="text-[11px] text-slate-400">Didukung oleh Gemini 3 Flash • SOP Puskesmas Kauman</span>
+                    <span class="text-[11px] text-amber-600 font-medium">⚠️ Jaga kerahasiaan data pasien</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MODUL 1 - BALITA & IBU HAMIL (S-K-D-N & e-PPGBM) -->
+        <section id="tab-balita" class="tab-content hidden flex-1 flex flex-col space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Form Input Balita -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
+                    <div class="flex items-center space-x-2 mb-4 pb-3 border-b border-slate-100">
+                        <i data-lucide="baby" class="w-5 h-5 text-emerald-600"></i>
+                        <h2 class="font-bold text-slate-800 text-base">Pencatatan Balita & e-PPGBM</h2>
+                    </div>
+                    <form id="balita-form" onsubmit="addBalita(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Balita</label>
+                            <input type="text" id="b-nama" required placeholder="Contoh: Ayla Safira" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Usia (Bulan)</label>
+                                <input type="number" id="b-usia" required min="0" max="60" placeholder="24" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kelamin</label>
+                                <select id="b-jk" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Berat Badan (kg)</label>
+                                <input type="number" step="0.1" id="b-bb" required placeholder="10.5" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Tinggi Badan (cm)</label>
+                                <input type="number" step="0.1" id="b-tb" required placeholder="82.0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Lingkar Kepala (cm)</label>
+                                <input type="number" step="0.1" id="b-lk" placeholder="45.0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Status Penimbangan</label>
+                                <select id="b-naik" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                                    <option value="true">Naik (N)</option>
+                                    <option value="false">Tidak Naik (T)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2 text-sm">
+                            <i data-lucide="calculator" class="w-4 h-4"></i>
+                            <span>Simpan & Analisis Stunting</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- S-K-D-N Summary & Table -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-base">Rekapitulasi S-K-D-N & Balita Merbot</h2>
+                                <p class="text-xs text-slate-500">Sinkronisasi e-PPGBM Puskesmas Kauman</p>
+                            </div>
+                            <button onclick="generateBalitaWhatsAppReport()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-xs font-medium flex items-center space-x-2 shadow-sm transition-colors">
+                                <i data-lucide="message-square" class="w-4 h-4"></i>
+                                <span>Salin Rekap WhatsApp Bidan</span>
+                            </button>
+                        </div>
+
+                        <!-- S-K-D-N Cards -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 my-5">
+                            <div class="bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl text-center">
+                                <span class="block text-xs font-semibold text-emerald-600 uppercase">S (Sasaran)</span>
+                                <span id="stat-s" class="text-2xl font-bold text-emerald-900">0</span>
+                                <span class="block text-[10px] text-emerald-600/80 mt-0.5">Total Balita Dusun</span>
+                            </div>
+                            <div class="bg-teal-50/70 border border-teal-100 p-4 rounded-2xl text-center">
+                                <span class="block text-xs font-semibold text-teal-600 uppercase">K (Terdaftar)</span>
+                                <span id="stat-k" class="text-2xl font-bold text-teal-900">0</span>
+                                <span class="block text-[10px] text-teal-600/80 mt-0.5">Punya Buku KIA</span>
+                            </div>
+                            <div class="bg-sky-50/70 border border-sky-100 p-4 rounded-2xl text-center">
+                                <span class="block text-xs font-semibold text-sky-600 uppercase">D (Datang)</span>
+                                <span id="stat-d" class="text-2xl font-bold text-sky-900">0</span>
+                                <span class="block text-[10px] text-sky-600/80 mt-0.5">Hadir & Ditimbang</span>
+                            </div>
+                            <div class="bg-amber-50/70 border border-amber-100 p-4 rounded-2xl text-center">
+                                <span class="block text-xs font-semibold text-amber-600 uppercase">N (Naik BB)</span>
+                                <span id="stat-n" class="text-2xl font-bold text-amber-900">0</span>
+                                <span class="block text-[10px] text-amber-600/80 mt-0.5">Berat Badan Naik</span>
+                            </div>
+                        </div>
+
+                        <!-- Balita List Table -->
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 max-h-64 overflow-y-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider">
+                                    <tr>
+                                        <th class="p-3">Nama & Usia</th>
+                                        <th class="p-3">BB / TB</th>
+                                        <th class="p-3">Status Gizi (BB/U)</th>
+                                        <th class="p-3">Stunting (TB/U)</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="balita-table-body" class="divide-y divide-slate-200 text-sm text-slate-700">
+                                    <tr>
+                                        <td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data balita.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ibu Hamil Section inside Balita/Bumil Tab -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3 mb-4">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="heart" class="w-5 h-5 text-rose-600"></i>
+                        <h3 class="font-bold text-slate-800 text-base">Pemeriksaan Ibu Hamil & Bumil Risti</h3>
+                    </div>
+                    <button onclick="openBumilModal()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium flex items-center space-x-2 shadow-sm transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Tambah Data Bumil</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider">
+                                <th class="p-3">Nama Ibu</th>
+                                <th class="p-3">Usia Kehamilan</th>
+                                <th class="p-3">Tekanan Darah</th>
+                                <th class="p-3">Tablet Tambah Darah (TTD)</th>
+                                <th class="p-3">Kategori Risti</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bumil-table-body" class="divide-y divide-slate-200 text-sm text-slate-700">
+                            <tr>
+                                <td colspan="6" class="p-6 text-center text-slate-400 italic">Belum ada data ibu hamil.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: MODUL 2 - POSYANDU REMAJA (10-18 tahun) -->
+        <section id="tab-remaja" class="tab-content hidden flex-1 flex flex-col space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
+                    <div class="flex items-center space-x-2 mb-4 pb-3 border-b border-slate-100">
+                        <i data-lucide="users" class="w-5 h-5 text-teal-600"></i>
+                        <h2 class="font-bold text-slate-800 text-base">Skrining Kesehatan Remaja</h2>
+                    </div>
+                    <form id="remaja-form" onsubmit="addRemaja(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Remaja</label>
+                            <input type="text" id="r-nama" required placeholder="Contoh: Dimas Anggara" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Usia (Tahun)</label>
+                                <input type="number" id="r-usia" required min="10" max="18" placeholder="15" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kelamin</label>
+                                <select id="r-jk" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Berat Badan (kg)</label>
+                                <input type="number" step="0.1" id="r-bb" required placeholder="50.0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Tinggi Badan (cm)</label>
+                                <input type="number" step="0.1" id="r-tb" required placeholder="160.0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Tekanan Darah (mmHg)</label>
+                                <input type="text" id="r-tensi" placeholder="110/70" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Patuh TTD (Remaja Putri)</label>
+                                <select id="r-ttd" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:bg-white focus:outline-none">
+                                    <option value="Ya">Ya (Minum Rutin)</option>
+                                    <option value="Tidak">Tidak / Belum</option>
+                                    <option value="N/A">N/A (Remaja Putra)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2 text-sm">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>Simpan Skrining Remaja</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-base">Daftar Skrining Posyandu Remaja</h2>
+                                <p class="text-xs text-slate-500">Pemantauan IMT, Anemia, & Pencegahan NAPZA/Rokok</p>
+                            </div>
+                            <span class="text-xs bg-teal-50 text-teal-700 font-semibold px-3 py-1.5 rounded-xl border border-teal-200">Usia 10 - 18 Tahun</span>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider">
+                                        <th class="p-3">Nama & Usia</th>
+                                        <th class="p-3">IMT / Status Gizi</th>
+                                        <th class="p-3">Tekanan Darah</th>
+                                        <th class="p-3">Kepatuhan TTD</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="remaja-table-body" class="divide-y divide-slate-200 text-sm text-slate-700">
+                                    <tr>
+                                        <td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data remaja.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: MODUL 3 - POSYANDU DEWASA & PTM (19-59 tahun) -->
+        <section id="tab-dewasa" class="tab-content hidden flex-1 flex flex-col space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
+                    <div class="flex items-center space-x-2 mb-4 pb-3 border-b border-slate-100">
+                        <i data-lucide="heart-pulse" class="w-5 h-5 text-emerald-600"></i>
+                        <h2 class="font-bold text-slate-800 text-base">Skrining PTM Usia Produktif</h2>
+                    </div>
+                    <form id="dewasa-form" onsubmit="addDewasa(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Warga / Peserta</label>
+                            <input type="text" id="d-nama" required placeholder="Contoh: Ibu Siti Aminah" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Usia (Tahun)</label>
+                                <input type="number" id="d-usia" required min="19" max="59" placeholder="35" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Tekanan Darah (mmHg)</label>
+                                <input type="text" id="d-tensi" required placeholder="130/85" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Lingkar Perut (cm)</label>
+                                <input type="number" step="0.1" id="d-perut" required placeholder="85.0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Gula Darah Sewaktu</label>
+                                <input type="text" id="d-gds" placeholder="110 mg/dL" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2 text-sm">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            <span>Simpan Skrining PTM</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-base">Pencatatan PTM & Hipertensi Usia Produktif</h2>
+                                <p class="text-xs text-slate-500">Deteksi Dini Hipertensi, Obesitas Sentral, & Diabetes</p>
+                            </div>
+                            <span class="text-xs bg-emerald-50 text-emerald-700 font-semibold px-3 py-1.5 rounded-xl border border-emerald-200">Usia 19 - 59 Tahun</span>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider">
+                                        <th class="p-3">Nama & Usia</th>
+                                        <th class="p-3">Tekanan Darah</th>
+                                        <th class="p-3">Lingkar Perut (Obesitas Sentral)</th>
+                                        <th class="p-3">Gula Darah</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dewasa-table-body" class="divide-y divide-slate-200 text-sm text-slate-700">
+                                    <tr>
+                                        <td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data warga usia dewasa.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: MODUL 4 - POSYANDU LANSIA (60+ tahun) -->
+        <section id="tab-lansia" class="tab-content hidden flex-1 flex flex-col space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
+                    <div class="flex items-center space-x-2 mb-4 pb-3 border-b border-slate-100">
+                        <i data-lucide="shield" class="w-5 h-5 text-indigo-600"></i>
+                        <h2 class="font-bold text-slate-800 text-base">Pemeriksaan Kesehatan Lansia</h2>
+                    </div>
+                    <form id="lansia-form" onsubmit="addLansia(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lansia</label>
+                            <input type="text" id="l-nama" required placeholder="Contoh: Mbah Saimin" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Usia (Tahun)</label>
+                                <input type="number" id="l-usia" required min="60" max="110" placeholder="68" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Tekanan Darah (mmHg)</label>
+                                <input type="text" id="l-tensi" required placeholder="140/90" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Kemandirian (ADL)</label>
+                                <select id="l-adl" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none">
+                                    <option value="Mandiri">Mandiri</option>
+                                    <option value="Bantuan Ringan">Bantuan Ringan</option>
+                                    <option value="Ketergantungan">Ketergantungan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Risiko Jatuh</label>
+                                <select id="l-jatuh" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none">
+                                    <option value="Rendah">Rendah</option>
+                                    <option value="Tinggi">Tinggi</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2 text-sm">
+                            <i data-lucide="user-check" class="w-4 h-4"></i>
+                            <span>Simpan Pemeriksaan Lansia</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-base">Daftar Pemeriksaan Posyandu Lansia</h2>
+                                <p class="text-xs text-slate-500">Pemantauan Tekanan Darah, Kemandirian ADL, & Risiko Jatuh</p>
+                            </div>
+                            <span class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-3 py-1.5 rounded-xl border border-indigo-200">Usia 60 Tahun ke Atas</span>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider">
+                                        <th class="p-3">Nama & Usia</th>
+                                        <th class="p-3">Tekanan Darah</th>
+                                        <th class="p-3">Kemandirian (ADL)</th>
+                                        <th class="p-3">Risiko Jatuh</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lansia-table-body" class="divide-y divide-slate-200 text-sm text-slate-700">
+                                    <tr>
+                                        <td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data lansia.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: MODUL 5 - MENU PMT LOKAL & SOP ILP PUSKESMAS KAUMAN -->
+        <section id="tab-pmt" class="tab-content hidden flex-1 flex flex-col space-y-6">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-8">
+                <div>
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Pencegahan Stunting & Gizi</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Rekomendasi Menu PMT Lokal Berbasis Protein Hewani</h2>
+                    <p class="text-sm text-slate-600 mt-1">Standar menu Pemberian Makanan Tambahan (PMT) lokal khas Ponorogo untuk balita gizi kurang dan pencegahan stunting sesuai pedoman Dinkes Ponorogo.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="h-36 bg-emerald-100 rounded-xl mb-4 flex items-center justify-center text-emerald-700">
+                                    <i data-lucide="fish" class="w-14 h-14 opacity-80"></i>
+                                </div>
+                                <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">Tinggi Protein & Omega-3</span>
+                                <h3 class="font-bold text-slate-900 text-base mt-2 mb-1">Nugget Lele Kelor Merbot</h3>
+                                <p class="text-xs text-slate-600 mb-3">Kombinasi filet ikan lele lokal dan daun kelor kaya zat besi dan protein.</p>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200 text-xs text-emerald-800 font-medium">💡 Sangat disukai balita & kaya protein</div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="h-36 bg-teal-100 rounded-xl mb-4 flex items-center justify-center text-teal-700">
+                                    <i data-lucide="egg" class="w-14 h-14 opacity-80"></i>
+                                </div>
+                                <span class="text-[11px] font-bold text-teal-700 bg-teal-100 px-2.5 py-1 rounded-full">Menu Kuah 12+ Bulan</span>
+                                <h3 class="font-bold text-slate-900 text-base mt-2 mb-1">Sup Telur Puyuh & Ayam</h3>
+                                <p class="text-xs text-slate-600 mb-3">Kaldu ayam asli dengan protein ganda dari telur puyuh dan daging cincang.</p>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200 text-xs text-teal-800 font-medium">💡 Mudah dicerna & tinggi zinc</div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="h-36 bg-amber-100 rounded-xl mb-4 flex items-center justify-center text-amber-700">
+                                    <i data-lucide="soup" class="w-14 h-14 opacity-80"></i>
+                                </div>
+                                <span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">Pencegahan Anemia</span>
+                                <h3 class="font-bold text-slate-900 text-base mt-2 mb-1">Bubur Hati Sapi</h3>
+                                <p class="text-xs text-slate-600 mb-3">Sumber zat besi dan protein hewani yang efektif mencegah stunting.</p>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200 text-xs text-amber-800 font-medium">💡 Tinggi zat besi & vitamin A</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-200">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">SOP Puskesmas Kauman</span>
+                    <h2 class="text-xl font-bold text-slate-900 mt-1">Alur Pelayanan 5 Langkah Posyandu ILP</h2>
+                    <p class="text-sm text-slate-600 mt-1">Integrasi Layanan Primer di Posyandu Merbot melayani seluruh siklus hidup.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 mt-4">
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                            <span class="font-bold text-emerald-800 text-sm block mb-1">Meja 1</span>
+                            <p class="text-xs text-slate-600">Pendaftaran & pencatatan kunjungan seluruh siklus hidup.</p>
+                        </div>
+                        <div class="bg-teal-50 border border-teal-200 p-4 rounded-xl">
+                            <span class="font-bold text-teal-800 text-sm block mb-1">Meja 2</span>
+                            <p class="text-xs text-slate-600">Pengukuran antropometri (BB, TB, Lingkar Perut/Lila).</p>
+                        </div>
+                        <div class="bg-sky-50 border border-sky-200 p-4 rounded-xl">
+                            <span class="font-bold text-sky-800 text-sm block mb-1">Meja 3</span>
+                            <p class="text-xs text-slate-600">Pencatatan di Buku KIA / e-PPGBM & Sistem PTM.</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                            <span class="font-bold text-amber-800 text-sm block mb-1">Meja 4</span>
+                            <p class="text-xs text-slate-600">Penyuluhan gizi, edukasi CERDIK, & pencegahan stunting.</p>
+                        </div>
+                        <div class="bg-rose-50 border border-rose-200 p-4 rounded-xl">
+                            <span class="font-bold text-rose-800 text-sm block mb-1">Meja 5</span>
+                            <p class="text-xs text-slate-600">Pelayanan nakes/Bidan desa (imunisasi, tensi, rujukan).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Form Tambah Bumil -->
+    <div id="bumil-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+                <h3 class="font-bold text-slate-800 text-base">Tambah Data Ibu Hamil</h3>
+                <button onclick="closeBumilModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="bumil-form" onsubmit="addBumil(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ibu Hamil</label>
+                    <input type="text" id="bm-nama" required placeholder="Contoh: Ny. Rina" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Usia Kehamilan (Minggu)</label>
+                        <input type="number" id="bm-usia" required min="1" max="42" placeholder="20" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tekanan Darah (mmHg)</label>
+                        <input type="text" id="bm-tensi" required placeholder="120/80" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Patuh TTD</label>
+                        <select id="bm-ttd" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Ya">Ya (Rutin)</option>
+                            <option value="Tidak">Tidak</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori Risti</label>
+                        <select id="bm-risti" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Non-Risti">Non-Risti</option>
+                            <option value="Bumil Risti">Bumil Risti</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closeBumilModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-sm transition-colors">Batal</button>
+                    <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition-colors">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>Asisten Virtual Posyandu Merbot ILP &copy; 2026 • Desa Kauman, Kec. Kauman, Kab. Ponorogo</p>
+    </footer>
+
+    <!-- JavaScript Application Logic with LocalStorage Persistence -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-emerald-100', 'hover:bg-emerald-800/50');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+            activeBtn.classList.remove('text-emerald-100', 'hover:bg-emerald-800/50');
+        }
+
+        // Toast Notification Helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-y-[-150%]');
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-150%]');
+            }, 3000);
+        }
+
+        // State Management with LocalStorage
+        let balitaList = JSON.parse(localStorage.getItem('posyandu_merbot_balita')) || [
+            { nama: "Aulia Zahra", usia: 18, jk: "P", bb: 10.2, tb: 78.5, lk: 44, statusBBU: "Gizi Baik", statusTBU: "Normal", naik: true },
+            { nama: "Budi Santoso", usia: 24, jk: "L", bb: 11.0, tb: 82.0, lk: 46, statusBBU: "Gizi Baik", statusTBU: "Normal", naik: true }
+        ];
+
+        let bumilList = JSON.parse(localStorage.getItem('posyandu_merbot_bumil')) || [
+            { nama: "Ny. Siska", usia: 24, tensi: "110/70", ttd: "Ya", risti: "Non-Risti" }
+        ];
+
+        let remajaList = JSON.parse(localStorage.getItem('posyandu_merbot_remaja')) || [
+            { nama: "Dimas Anggara", usia: 15, jk: "L", bb: 50, tb: 160, imt: "19.5 (Normal)", tensi: "110/70", ttd: "N/A" }
+        ];
+
+        let dewasaList = JSON.parse(localStorage.getItem('posyandu_merbot_dewasa')) || [
+            { nama: "Ibu Siti Aminah", usia: 35, tensi: "130/85", perut: 82, gds: "105 mg/dL" }
+        ];
+
+        let lansiaList = JSON.parse(localStorage.getItem('posyandu_merbot_lansia')) || [
+            { nama: "Mbah Saimin", usia: 68, tensi: "140/90", adl: "Mandiri", jatuh: "Rendah" }
+        ];
+
+        // Initial Render
+        renderAllTables();
+
+        function saveData() {
+            localStorage.setItem('posyandu_merbot_balita', JSON.stringify(balitaList));
+            localStorage.setItem('posyandu_merbot_bumil', JSON.stringify(bumilList));
+            localStorage.setItem('posyandu_merbot_remaja', JSON.stringify(remajaList));
+            localStorage.setItem('posyandu_merbot_dewasa', JSON.stringify(dewasaList));
+            localStorage.setItem('posyandu_merbot_lansia', JSON.stringify(lansiaList));
+        }
+
+        function renderAllTables() {
+            renderBalitaTable();
+            renderBumilTable();
+            renderRemajaTable();
+            renderDewasaTable();
+            renderLansiaTable();
+        }
+
+        // --- BALITA & BUMIL MODULE ---
+        function addBalita(event) {
+            event.preventDefault();
+            const nama = document.getElementById('b-nama').value;
+            const usia = parseInt(document.getElementById('b-usia').value);
+            const jk = document.getElementById('b-jk').value;
+            const bb = parseFloat(document.getElementById('b-bb').value);
+            const tb = parseFloat(document.getElementById('b-tb').value);
+            const lk = parseFloat(document.getElementById('b-lk').value) || 0;
+            const naik = document.getElementById('b-naik').value === 'true';
+
+            let statusBBU = "Gizi Baik";
+            if (bb < (usia * 0.4 + 3)) statusBBU = "Gizi Kurang";
+            if (bb < (usia * 0.35 + 2.5)) statusBBU = "Gizi Buruk";
+
+            let statusTBU = "Normal";
+            if (tb < (usia * 0.5 + 65)) statusTBU = "Pendek (Stunting)";
+
+            balitaList.push({ nama, usia, jk, bb, tb, lk, statusBBU, statusTBU, naik });
+            saveData();
+            document.getElementById('balita-form').reset();
+            renderBalitaTable();
+            showToast('Data balita & analisis stunting disimpan!');
+        }
+
+        function deleteBalita(index) {
+            balitaList.splice(index, 1);
+            saveData();
+            renderBalitaTable();
+            showToast('Data balita dihapus.');
+        }
+
+        function renderBalitaTable() {
+            const tbody = document.getElementById('balita-table-body');
+            tbody.innerHTML = '';
+
+            if (balitaList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data balita.</td></tr>`;
+                document.getElementById('stat-s').innerText = 0;
+                document.getElementById('stat-k').innerText = 0;
+                document.getElementById('stat-d').innerText = 0;
+                document.getElementById('stat-n').innerText = 0;
+                return;
+            }
+
+            document.getElementById('stat-s').innerText = balitaList.length;
+            document.getElementById('stat-k').innerText = balitaList.length;
+            document.getElementById('stat-d').innerText = balitaList.length;
+            document.getElementById('stat-n').innerText = balitaList.filter(b => b.naik).length;
+
+            balitaList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                let bbuColor = item.statusBBU === 'Gizi Baik' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+                let tbuColor = item.statusTBU === 'Normal' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+                let naikBadge = item.naik ? '<span class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">N</span>' : '<span class="text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full font-semibold">T</span>';
+
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <p class="font-semibold text-slate-900">${item.nama} ${naikBadge}</p>
+                        <p class="text-xs text-slate-500">${item.usia} bln (${item.jk})</p>
+                    </td>
+                    <td class="p-3 text-xs text-slate-700">
+                        <p>${item.bb} kg</p>
+                        <p>${item.tb} cm</p>
+                    </td>
+                    <td class="p-3"><span class="text-xs px-2.5 py-1 rounded-full font-semibold ${bbuColor}">${item.statusBBU}</span></td>
+                    <td class="p-3"><span class="text-xs px-2.5 py-1 rounded-full font-semibold ${tbuColor}">${item.statusTBU}</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteBalita(${index})" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function openBumilModal() { document.getElementById('bumil-modal').classList.remove('hidden'); }
+        function closeBumilModal() { document.getElementById('bumil-modal').classList.add('hidden'); }
+
+        function addBumil(event) {
+            event.preventDefault();
+            const nama = document.getElementById('bm-nama').value;
+            const usia = parseInt(document.getElementById('bm-usia').value);
+            const tensi = document.getElementById('bm-tensi').value;
+            const ttd = document.getElementById('bm-ttd').value;
+            const risti = document.getElementById('bm-risti').value;
+
+            bumilList.push({ nama, usia, tensi, ttd, risti });
+            saveData();
+            document.getElementById('bumil-form').reset();
+            closeBumilModal();
+            renderBumilTable();
+            showToast('Data ibu hamil disimpan!');
+        }
+
+        function deleteBumil(index) {
+            bumilList.splice(index, 1);
+            saveData();
+            renderBumilTable();
+            showToast('Data bumil dihapus.');
+        }
+
+        function renderBumilTable() {
+            const tbody = document.getElementById('bumil-table-body');
+            tbody.innerHTML = '';
+            if (bumilList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Belum ada data ibu hamil.</td></tr>`;
+                return;
+            }
+            bumilList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                let ristiColor = item.risti === 'Non-Risti' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-900">${item.nama}</td>
+                    <td class="p-3 text-xs text-slate-700">${item.usia} minggu</td>
+                    <td class="p-3 text-xs text-slate-700">${item.tensi}</td>
+                    <td class="p-3 text-xs text-slate-700">TTD: ${item.ttd}</td>
+                    <td class="p-3"><span class="text-xs px-2.5 py-1 rounded-full font-semibold ${ristiColor}">${item.risti}</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteBumil(${index})" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function generateBalitaWhatsAppReport() {
+            const S = balitaList.length;
+            const D = balitaList.length;
+            const N = balitaList.filter(b => b.naik).length;
+            const stunting = balitaList.filter(b => b.statusTBU.includes('Pendek')).length;
+            const text = `📋 *REKAPITULASI POSYANDU MERBOT (ILP)*\nDesa Kauman, Kec. Kauman, Kab. Ponorogo\n\n*INDIKATOR S-K-D-N:* \n• S: ${S} | K: ${S} | D: ${D} | N: ${N}\n*INDIKATOR STUNTING:* ${stunting} anak pendek/stunting.\n\nLaporan siap diverifikasi oleh Bidan Desa Kauman.`;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try { document.execCommand('copy'); showToast('Rekap WhatsApp S-K-D-N disalin!'); } catch (err) { showToast('Gagal menyalin.'); }
+            document.body.removeChild(textArea);
+        }
+
+        // --- REMAJA MODULE ---
+        function addRemaja(event) {
+            event.preventDefault();
+            const nama = document.getElementById('r-nama').value;
+            const usia = parseInt(document.getElementById('r-usia').value);
+            const jk = document.getElementById('r-jk').value;
+            const bb = parseFloat(document.getElementById('r-bb').value);
+            const tb = parseFloat(document.getElementById('r-tb').value);
+            const tensi = document.getElementById('r-tensi').value || "120/80";
+            const ttd = document.getElementById('r-ttd').value;
+
+            const tbM = tb / 100;
+            const imtVal = (bb / (tbM * tbM)).toFixed(1);
+            let imtStatus = imtVal < 18.5 ? "Kurus" : imtVal <= 24.9 ? "Normal" : "Gemuk";
+
+            remajaList.push({ nama, usia, jk, bb, tb, imt: `${imtVal} (${imtStatus})`, tensi, ttd });
+            saveData();
+            document.getElementById('remaja-form').reset();
+            renderRemajaTable();
+            showToast('Data remaja disimpan!');
+        }
+
+        function deleteRemaja(index) {
+            remajaList.splice(index, 1);
+            saveData();
+            renderRemajaTable();
+            showToast('Data remaja dihapus.');
+        }
+
+        function renderRemajaTable() {
+            const tbody = document.getElementById('remaja-table-body');
+            tbody.innerHTML = '';
+            if (remajaList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data remaja.</td></tr>`;
+                return;
+            }
+            remajaList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3"><p class="font-semibold text-slate-900">${item.nama}</p><p class="text-xs text-slate-500">${item.usia} th (${item.jk})</p></td>
+                    <td class="p-3 text-xs text-slate-700">${item.imt}</td>
+                    <td class="p-3 text-xs text-slate-700">${item.tensi}</td>
+                    <td class="p-3 text-xs font-medium text-teal-700">Patuh TTD: ${item.ttd}</td>
+                    <td class="p-3 text-center"><button onclick="deleteRemaja(${index})" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        // --- DEWASA / PTM MODULE ---
+        function addDewasa(event) {
+            event.preventDefault();
+            const nama = document.getElementById('d-nama').value;
+            const usia = parseInt(document.getElementById('d-usia').value);
+            const tensi = document.getElementById('d-tensi').value;
+            const perut = parseFloat(document.getElementById('d-perut').value);
+            const gds = document.getElementById('d-gds').value || "Normal";
+
+            dewasaList.push({ nama, usia, tensi, perut: `${perut} cm`, gds });
+            saveData();
+            document.getElementById('dewasa-form').reset();
+            renderDewasaTable();
+            showToast('Data skrining PTM dewasa disimpan!');
+        }
+
+        function deleteDewasa(index) {
+            dewasaList.splice(index, 1);
+            saveData();
+            renderDewasaTable();
+            showToast('Data dewasa dihapus.');
+        }
+
+        function renderDewasaTable() {
+            const tbody = document.getElementById('dewasa-table-body');
+            tbody.innerHTML = '';
+            if (dewasaList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data dewasa.</td></tr>`;
+                return;
+            }
+            dewasaList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3"><p class="font-semibold text-slate-900">${item.nama}</p><p class="text-xs text-slate-500">${item.usia} th</p></td>
+                    <td class="p-3 text-xs font-medium text-slate-800">${item.tensi}</td>
+                    <td class="p-3 text-xs text-slate-700">${item.perut}</td>
+                    <td class="p-3 text-xs text-slate-700">${item.gds}</td>
+                    <td class="p-3 text-center"><button onclick="deleteDewasa(${index})" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        // --- LANSIA MODULE ---
+        function addLansia(event) {
+            event.preventDefault();
+            const nama = document.getElementById('l-nama').value;
+            const usia = parseInt(document.getElementById('l-usia').value);
+            const tensi = document.getElementById('l-tensi').value;
+            const adl = document.getElementById('l-adl').value;
+            const jatuh = document.getElementById('l-jatuh').value;
+
+            lansiaList.push({ nama, usia, tensi, adl, jatuh });
+            saveData();
+            document.getElementById('lansia-form').reset();
+            renderLansiaTable();
+            showToast('Data pemeriksaan lansia disimpan!');
+        }
+
+        function deleteLansia(index) {
+            lansiaList.splice(index, 1);
+            saveData();
+            renderLansiaTable();
+            showToast('Data lansia dihapus.');
+        }
+
+        function renderLansiaTable() {
+            const tbody = document.getElementById('lansia-table-body');
+            tbody.innerHTML = '';
+            if (lansiaList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Belum ada data lansia.</td></tr>`;
+                return;
+            }
+            lansiaList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                let jatuhColor = item.jatuh === 'Rendah' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+                tr.innerHTML = `
+                    <td class="p-3"><p class="font-semibold text-slate-900">${item.nama}</p><p class="text-xs text-slate-500">${item.usia} th</p></td>
+                    <td class="p-3 text-xs font-medium text-slate-800">${item.tensi}</td>
+                    <td class="p-3 text-xs text-slate-700">${item.adl}</td>
+                    <td class="p-3"><span class="text-xs px-2.5 py-1 rounded-full font-semibold ${jatuhColor}">${item.jatuh}</span></td>
+                    <td class="p-3 text-center"><button onclick="deleteLansia(${index})" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        // --- GEMINI AI ASSISTANT CHAT ---
+        const systemPrompt = `[ROLE]
+Anda adalah "Asisten Virtual Posyandu Merbot", sistem AI pendukung operasional bagi Kader Posyandu di Dusun Merbot, Desa Kauman, Kecamatan Kauman, Kabupaten Ponorogo. Tugas Anda adalah membantu kader dalam pencatatan data, pemantauan kesehatan lintas siklus hidup (Balita, Ibu Hamil, Remaja, Dewasa/Usia Produktif, dan Lansia), pelaporan kesehatan (e-PPGBM & PTM), serta edukasi kesehatan selaras dengan SOP Puskesmas Kauman dan Dinkes Ponorogo.
+
+[KONTEKS WILAYAH & STANDAR OPERASIONAL]
+- Wilayah Kerja: Dusun Merbot, Desa Kauman, Kecamatan Kauman, Kab. Ponorogo.
+- Rujukan Utama: SOP Puskesmas Kauman & Dinas Kesehatan Kab. Ponorogo (Implementasi ILP / Integrasi Layanan Primer).
+- Standar Kesehatan: Buku KIA terbaru, Standar Antropometri Kemenkes, Skrining Penyakit Tidak Menular (PTM), dan pedoman pencegahan stunting.
+Berikan jawaban yang ramah, profesional, dan mudah dipahami oleh kader posyandu.`;
+
+        let chatHistory = [];
+
+        function sendQuickPrompt(promptText) {
+            document.getElementById('chat-input').value = promptText;
+            document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+        }
+
+        async function handleChatSubmit(event) {
+            event.preventDefault();
+            const inputEl = document.getElementById('chat-input');
+            const message = inputEl.value.trim();
+            if (!message) return;
+
+            inputEl.value = '';
+            appendMessage('user', message);
+            chatHistory.push({ role: 'user', parts: [{ text: message }] });
+
+            const loadingId = 'loading-' + Date.now();
+            appendLoadingMessage(loadingId);
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: chatHistory,
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                removeLoadingMessage(loadingId);
+
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const aiResponse = candidate.content.parts[0].text;
+                    appendMessage('model', aiResponse);
+                    chatHistory.push({ role: 'model', parts: [{ text: aiResponse }] });
+                } else {
+                    appendMessage('model', 'Maaf, terjadi kendala saat memproses jawaban. Silakan coba beberapa saat lagi.');
+                }
+            } catch (error) {
+                removeLoadingMessage(loadingId);
+                appendMessage('model', 'Terjadi kesalahan koneksi ke server AI.');
+            }
+        }
+
+        function appendMessage(sender, text) {
+            const container = document.getElementById('chat-messages');
+            const isUser = sender === 'user';
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex items-start space-x-3 ${isUser ? 'justify-end' : ''}`;
+
+            if (isUser) {
+                wrapper.innerHTML = `
+                    <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-4 shadow-sm max-w-[85%] sm:max-w-[70%] text-sm leading-relaxed"><p>${escapeHtml(text)}</p></div>
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold shadow-sm"><i data-lucide="user" class="w-4 h-4"></i></div>
+                `;
+            } else {
+                wrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold shadow-sm"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%] sm:max-w-[70%] text-sm text-slate-700 leading-relaxed"><p>${formatMarkdown(text)}</p></div>
+                `;
+            }
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+        }
+
+        function appendLoadingMessage(id) {
+            const container = document.getElementById('chat-messages');
+            const wrapper = document.createElement('div');
+            wrapper.id = id;
+            wrapper.className = `flex items-start space-x-3`;
+            wrapper.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold shadow-sm"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm text-sm text-slate-500 flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]"></span>
+                    <span class="text-xs ml-2">Asisten sedang mengetik...</span>
+                </div>
+            `;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+        }
+
+        function removeLoadingMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function clearChat() {
+            chatHistory = [];
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold shadow-sm"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%] sm:max-w-[70%] text-sm text-slate-700 leading-relaxed">
+                        <p class="font-semibold text-emerald-800 mb-1">Percakapan direset! 👋</p>
+                        <p>Silakan tanyakan hal seputar Posyandu Merbot ILP.</p>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            showToast('Chat direset.');
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function formatMarkdown(text) {
+            return escapeHtml(text)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+        }
+    </script>
+</body>
+</html>
